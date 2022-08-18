@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SetTarget</title>
+
+    <meta charset="utf-8">
+    <title>SetTarget</title>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="application-name" content="SetTarget">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+    <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="http://bbecquet.github.io/Leaflet.RotatedMarker/leaflet.rotatedMarker.js"></script> -->
+
+    <link rel="stylesheet" href="map/leaflet/leaflet.css" />
+    <script src="map/leaflet/leaflet.js"></script>
+    <script src="map/leaflet.rotatedMarker.js"></script>
+
+    <script src="lib/underscore.js"></script>
+    <script src="lib/jquery-2.2.4.min.js"></script>
+
+    <link href="lib/jquery.mobile/jquery.mobile-1.4.5.min.css" rel="stylesheet" />
+    <script src="lib/jquery.mobile/jquery.mobile-1.4.5.min.js"></script>
+
+
+    <script src="initConn.js"></script>
+
+    <style>
+        body {
+            font-family: Courier, monospaced;
+            font-size: 10px;
+            font-weight: bold;
+
+        }
+
+        #eq>span {
+            height: 120px;
+            float: left;
+            margin: 15px
+        }
+
+        textarea.ui-input-text {
+            height: inherit !important
+        }
+
+        #map {
+            height: 450px;
+        }
+    </style>
+    <script>
+
+        window.oncontextmenu = function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        };
+    </script>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div class="ui-field-contain">
+        <fieldset class="ui-grid-a">
+                <div class="ui-block-a"> <textarea name="" id="msg" style="width: 100%;" cols="30" rows="16"></textarea>
+            </div>
+                <div class="ui-block-b">
+
+                <!-- <select name="flip-3" id="logdata" data-role="slider" data-mini="true">
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                </select> -->
+                <button id="logdata">logdata</button>
+            </div>
+        </fieldset>
+    </div>
+    <script>
+
+        $(function () {
+            let lastWpDataStr = ''
+
+            let status = false
+
+            // showInfo()
+            // magnification with which the map will start
+            const zoom = 17;
+            // co-ordinates
+            const lat = 8.69713060
+            const lng = 98.24120390
+
+            // calling map
+
+            // var bingmap = L.tileLayer("https://webstatic.github.io/static/bingmap/{z}/{x}/{y}.png", {
+            //     maxZoom: 20,
+            //     maxNativeZoom: 18
+            // })
+            var bingmapLocal = L.tileLayer("bingmap/{z}/{x}/{y}.png", {
+                maxZoom: 20,
+                maxNativeZoom: 17
+            })
+
+
+            var baseMaps = {
+                "bingmapLocal": bingmapLocal,
+            };
+
+            let config = {
+                minZoom: 7,
+                maxZoom: 20,
+                layers: [bingmapLocal]
+            };
+            const map = L.map("map", config).setView([lat, lng], zoom);
+
+            L.control.layers(baseMaps).addTo(map);
+
+
+            const funny = L.icon({
+                iconUrl: "../map/Rust__Cesna206.svg",
+                // iconSize: [50, 58], // size of the icon
+                iconSize: [50, 50], // size of the icon
+                //iconAnchor: [20, 58], // changed marker icon position
+                iconAnchor: [25, 25], // changed marker icon position
+
+                popupAnchor: [0, -60], // changed popup position
+            });
+
+            const funny2 = L.icon({
+                iconUrl: "../map/Green-Up-Arrow.svg",
+                // iconSize: [50, 58], // size of the icon
+                iconSize: [50, 50], // size of the icon
+                //iconAnchor: [20, 58], // changed marker icon position
+                iconAnchor: [25, 25], // changed marker icon position
+
+                popupAnchor: [0, -60], // changed popup position
+            });
+
+            var pos = {
+                lat: 8.69713060,
+                lng: 98.24120390,
+            }
+            var rotationAngle = 0
+
+            var marker = L.marker(pos, {
+                icon: funny,
+                rotationAngle: rotationAngle,
+                rotationOrigin: 'center'
+            }).addTo(map)
+
+            var marker2 = L.marker(pos, {
+                icon: funny2,
+                rotationAngle: rotationAngle,
+                rotationOrigin: 'center',
+                opacity: 0.4
+            }).addTo(map)
+
+            // var marker0 = L.marker(pos, { opacity: 0.6 }).addTo(map).bindPopup("test");
+
+            var marker0 = L.circle(pos, 3).addTo(map);
+
+            let getInfoLoop = function () {
+                callGet('getInfo', null, function (result) {
+                    console.log(result);
+                    $('#msg').text(JSON.stringify(result))
+
+
+                    if (result.gpsHeading) {
+                        rotationAngle = result.gpsHeading
+                    } else if (result.Heading) {
+                        rotationAngle = result.Heading
+                    }
+
+                    //console.log('rotationAngle', rotationAngle);
+                    if (result.lat) {
+                        pos.lat = result.lat
+                        pos.lng = result.lon
+
+                    }
+                    marker.setLatLng(pos)
+                    marker2.setLatLng(pos)
+
+                    marker0.bindPopup(JSON.stringify(pos));
+                    marker0.setLatLng(pos)
+                    map.setView(pos)
+                    //rotationAngle++
+                    //if (currentSpeed && currentSpeed > 0) {
+                    marker.setRotationAngle(rotationAngle)
+
+                    setTimeout(() => {
+                        getInfoLoop()
+                    }, 1000);
+                })
+            }
+
+            callGet('getConfig', null, function (result) {
+                console.log(result);
+                getInfoLoop()
+            })
+
+        })
+    </script>
+
+</body>
+
+</html>

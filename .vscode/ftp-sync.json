@@ -1,0 +1,28 @@
+{
+    "remotePath": "./code/target",
+    "host": "192.168.4.3",
+    "username": "newww",
+    "password": "123",
+    "port": 2221,
+    "secure": false,
+    "protocol": "ftp",
+    "uploadOnSave": false,
+    "passive": false,
+    "debug": false,
+    "privateKeyPath": null,
+    "passphrase": null,
+    "agent": null,
+    "allow": [],
+    "ignore": [
+        "\\.vscode",
+        "\\.git",
+        "\\.DS_Store"
+    ],
+    "generatedFiles": {
+        "extensionsToInclude": [
+            ".js",
+            ".html"
+        ],
+        "path": ""
+    }
+}
