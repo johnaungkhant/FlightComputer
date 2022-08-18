@@ -165,8 +165,13 @@
             let getInfoLoop = function () {
                 callGet('getInfo', null, function (result) {
                     console.log(result);
-                    $('#msg').text(JSON.stringify(result))
+                    $('#msg').empty();
+                    $('#msg').append("time: " + result.time + ' mem: ' + result.mem + '\n')
+                    $('#msg').append("heading: " + result.Heading + '\n')
+                    $('#msg').append("alt: " + result.alt + '\n')
+                    $('#msg').append("altGps: " + result.altGps + '\n')
 
+                    $('#msg').append('\n\n' + JSON.stringify(result))
 
                     if (result.gpsHeading) {
                         rotationAngle = result.gpsHeading
