@@ -138,6 +138,16 @@
                 popupAnchor: [0, -60], // changed popup position
             });
 
+            const funny3 = L.icon({
+                iconUrl: "../map/Red_Arrow_Up.svg",
+                // iconSize: [50, 58], // size of the icon
+                iconSize: [50, 50], // size of the icon
+                //iconAnchor: [20, 58], // changed marker icon position
+                iconAnchor: [25, 25], // changed marker icon position
+
+                popupAnchor: [0, -60], // changed popup position
+            });
+
             var pos = {
                 lat: 8.69713060,
                 lng: 98.24120390,
@@ -157,9 +167,15 @@
                 opacity: 0.4
             }).addTo(map)
 
+            var marker3 = L.marker(pos, {
+                icon: funny3,
+                rotationAngle: rotationAngle,
+                rotationOrigin: 'center',
+                opacity: 0.2
+            }).addTo(map)
             // var marker0 = L.marker(pos, { opacity: 0.6 }).addTo(map).bindPopup("test");
 
-            var marker0 = L.circle(pos, 3).addTo(map);
+            //var marker0 = L.circle(pos, 3).addTo(map);
 
             var lastLat = null
             var lastLon = null
@@ -208,11 +224,12 @@
                     // } else if (result.sys.Heading) {
                     if (result.estHeading != null) {
                         rotationAngle = result.estHeading
-                    } else {
-                        rotationAngle = result.sys.Heading
                     }
-                    // }
+                    //else {  
 
+                    //}
+                    // }
+                    marker3.setRotationAngle(result.sys.Heading)
                     //console.log('rotationAngle', rotationAngle);
                     if (result.gps.lat) {
                         pos.lat = result.gps.lat
@@ -222,9 +239,10 @@
 
                     marker.setLatLng(pos)
                     marker2.setLatLng(pos)
+                    marker3.setLatLng(pos)
 
-                    marker0.bindPopup(JSON.stringify(pos));
-                    marker0.setLatLng(pos)
+                    //marker0.bindPopup(JSON.stringify(pos));
+                    //marker0.setLatLng(pos)
                     map.setView(pos)
                     //rotationAngle++
                     //if (currentSpeed && currentSpeed > 0) {
