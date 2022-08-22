@@ -104,7 +104,6 @@
                 maxNativeZoom: 17
             })
 
-
             var baseMaps = {
                 "bingmapLocal": bingmapLocal,
             };
@@ -162,29 +161,65 @@
 
             var marker0 = L.circle(pos, 3).addTo(map);
 
+            var lastLat = null
+            var lastLon = null
+            var D2R = Math.PI / 180;
+            // Heading (N=0, E=90, S=189, W=270) from point 1 to point 2
+            Heading = function (lat1, lon1, lat2, lon2) {
+
+                var dlon = (lon2 - lon1) * D2R;
+
+                lat1 = lat1 * D2R;
+                lat2 = lat2 * D2R;
+
+                var sdlon = Math.sin(dlon);
+                var cdlon = Math.cos(dlon);
+
+                var slat1 = Math.sin(lat1);
+                var clat1 = Math.cos(lat1);
+
+                var slat2 = Math.sin(lat2);
+                var clat2 = Math.cos(lat2);
+
+                var y = sdlon * clat2;
+                var x = clat1 * slat2 - slat1 * clat2 * cdlon;
+
+                var head = Math.atan2(y, x) * 180 / Math.PI;
+
+                return (head + 360) % 360;
+            };
+
             let getInfoLoop = function () {
                 callGet('getInfo', null, function (result) {
                     console.log(result);
                     $('#msg').empty();
                     $('#msg').append("time: " + result.time + ' mem: ' + result.mem + '\n')
-                    $('#msg').append("heading: " + result.Heading + '\n')
-                    $('#msg').append("alt: " + result.alt + '\n')
-                    $('#msg').append("altGps: " + result.altGps + '\n')
+                    $('#msg').append("hdop: " + result.gps.hdop + ' satellites: ' + result.gps.satellites + '\n')
+
+
+                    $('#msg').append("heading: " + result.sys.Heading + '\n')
+                    $('#msg').append("alt: " + result.sys.alt + '\n')
+                    $('#msg').append("altGps: " + result.gps.alt + ' speed: ' + result.gps.speed + '\n')
 
                     $('#msg').append('\n\n' + JSON.stringify(result))
 
-                    if (result.gpsHeading) {
-                        rotationAngle = result.gpsHeading
-                    } else if (result.Heading) {
-                        rotationAngle = result.Heading
+                    // if (result.gps.gpsHeading) {
+                    //     rotationAngle = result.gps.gpsHeading
+                    // } else if (result.sys.Heading) {
+                    if (result.estHeading != null) {
+                        rotationAngle = result.estHeading
+                    } else {
+                        rotationAngle = result.sys.Heading
                     }
+                    // }
 
                     //console.log('rotationAngle', rotationAngle);
-                    if (result.lat) {
-                        pos.lat = result.lat
-                        pos.lng = result.lon
+                    if (result.gps.lat) {
+                        pos.lat = result.gps.lat
+                        pos.lng = result.gps.lon
 
                     }
+
                     marker.setLatLng(pos)
                     marker2.setLatLng(pos)
 
@@ -195,9 +230,18 @@
                     //if (currentSpeed && currentSpeed > 0) {
                     marker.setRotationAngle(rotationAngle)
 
+
+                    //if (result.gps.speed >= 1)
+                    if (result.sys.HeadingUse) {
+                        marker2.setRotationAngle(result.sys.HeadingUse)
+                    }
+
+                    // lastLat = result.lat
+                    // lastLon = result.lon
+
                     setTimeout(() => {
                         getInfoLoop()
-                    }, 1000);
+                    }, 500);
                 })
             }
 
@@ -207,6 +251,48 @@
             })
 
         })
+
+        function calEstHeading(comp0, gph0, comp1, gph1, comp) {
+            //convert edge degree first
+            let x0 = 0 //use as reference point
+            let g0 = conAngle(gph0 - comp0)
+
+            let x1 = conAngle(comp1 - comp0)
+            let g1 = conAngle(gph1 - comp0)
+
+            let y0 = conAngle(g0 - x0)
+            let y1 = conAngle(g1 - x1)
+
+            let xn = conAngle(comp - comp0)
+
+            //console.log(x0, g0, x1, g1, y0, y1);
+            let m = (y1 - y0) / conAngle(x1 - x0)
+            //console.log(comp1, comp0, subAngle(comp1, comp0));
+            console.log(y0, y1, m);
+            // console.log((gph1 - comp1) - (gph0 - comp0), (comp1 - comp0), -3 / 10, m);
+            let b = y0 - (m * x0)
+            //console.log(b);
+
+            let gn = (m * xn) + b + xn
+
+            return conAngle(comp0 + gn)
+        }
+
+        function conAngle(result) {
+            if (result > 180) {
+                result = result - 360
+            }
+            if (result < -180) {
+                result = result + 360
+            }
+
+            return result
+        }
+
+        //console.log(calEstHeading(10, 15, 20, 22, 18));
+        //gph0, comp0, gph1, comp1, comp
+        //console.log(calEstHeading(320, 285, 30, 350, 10));
+
     </script>
 
 </body>
