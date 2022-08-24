@@ -164,7 +164,7 @@
                 icon: funny2,
                 rotationAngle: rotationAngle,
                 rotationOrigin: 'center',
-                opacity: 0.4
+                opacity: 0.3
             }).addTo(map)
 
             var marker3 = L.marker(pos, {
@@ -223,13 +223,21 @@
                     //     rotationAngle = result.gps.gpsHeading
                     // } else if (result.sys.Heading) {
                     if (result.estHeading != null) {
-                        rotationAngle = result.estHeading
+                        marker.setRotationAngle(result.estHeading)
+                        marker.setOpacity(1)
+                    } else {
+                        marker.setOpacity(0.1)
                     }
                     //else {  
 
                     //}
                     // }
-                    marker3.setRotationAngle(result.sys.Heading)
+
+                    if (result.sys.Heading != null) {
+                        marker3.setRotationAngle(result.sys.Heading)
+
+                    }
+
                     //console.log('rotationAngle', rotationAngle);
                     if (result.gps.lat) {
                         pos.lat = result.gps.lat
@@ -246,12 +254,14 @@
                     map.setView(pos)
                     //rotationAngle++
                     //if (currentSpeed && currentSpeed > 0) {
-                    marker.setRotationAngle(rotationAngle)
 
 
                     //if (result.gps.speed >= 1)
                     if (result.sys.HeadingUse) {
                         marker2.setRotationAngle(result.sys.HeadingUse)
+                        marker2.setOpacity(0.3)
+                    } else {
+                        marker2.setOpacity(0.1)
                     }
 
                     // lastLat = result.lat
