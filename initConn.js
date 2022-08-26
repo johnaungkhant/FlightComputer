@@ -1,7 +1,7 @@
 function callGet(func, data, cb, error) {
     var dataObj = {}
     dataObj.msg = func
-    if (data)
+    if (data != null)
         dataObj.data = JSON.stringify(data)
 
     $.ajax({

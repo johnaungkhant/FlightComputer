@@ -1,0 +1,122 @@
+﻿<!DOCTYPE html>
+
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<script>
+
+    console.log(window.location.host);
+    if (window.location.host && window.location.host != "" && window.location.host != "localhost") {
+        host = window.location.host;
+    } else {
+        host = '192.168.4.1';
+    }
+
+    var serviceUrl = 'http://' + host + '/';
+    _tryToGet = false
+    function callGet(func, cb) {
+        _tryToGet = true
+        var xh = new XMLHttpRequest();
+        if (cb) {
+            xh.onreadystatechange = function () {
+                if (xh.readyState == 4 && xh.status == 200) {
+                    _tryToGet = false
+                    cb(xh.responseText);
+                }
+                // else {
+                //     cb(null, 'error');
+                // }
+
+            }
+        }
+
+        console.log(serviceUrl + func);
+        xh.open("GET", serviceUrl + func, true); // true for asynchronous 
+        xh.send(null);
+    }
+
+</script>
+<style>
+    .form {
+        border: 3px solid #f1f1f1;
+    }
+
+    button {
+
+        width: 80px;
+        height: 50px;
+    }
+
+    img.avatar {
+        width: 40%;
+        border-radius: 50%;
+    }
+
+    .container {
+        padding: 16px;
+    }
+
+    span.psw {
+        float: right;
+        padding-top: 16px;
+    }
+
+    @media screen and (max-width:100px) {
+        span.psw {
+            display: block;
+            float: none;
+        }
+
+    }
+</style>
+
+<body>
+    <div style="display: none;">
+        <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete"
+            autocomplete="address-level4" />
+    </div>
+    <div class="form" autocomplete="off">
+
+        <div class="container" autocomplete="off">
+
+            <label id="12">Na</label>
+            <button onclick="Open()">Open</button>
+            <button onclick="Close()">Close</button>
+
+        </div>
+        </form>
+
+        <script>
+            function getElem(id) {
+                return document.getElementById(id);
+            }
+            function setTxt(id, tx) {
+                getElem(id).innerHTML = tx
+            }
+
+            function Open() {
+                move(12, 1.5)
+            }
+            function Close() {
+                move(12, 2)
+            }
+
+            function move(id, value) {
+                callGet('func?msg=move&data=' + id + '_' + value, function (result) {
+                    setTxt(id, result)
+                })
+            }
+
+            isOpen = false
+            setInterval(() => {
+                if (isOpen) {
+                    Close()
+                } else {
+                    Open()
+                }
+                isOpen = !isOpen
+            }, 1000);
+        </script>
+</body>
+
+</html>

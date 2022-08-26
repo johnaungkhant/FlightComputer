@@ -29,7 +29,29 @@
     <script src="lib/jquery.mobile/jquery.mobile-1.4.5.min.js"></script>
 
 
-    <script src="initConn.js"></script>
+    <script>
+        function callGet(func, data, cb, error) {
+            var dataObj = {}
+            dataObj.msg = func
+            if (data != null)
+                dataObj.data = JSON.stringify(data)
+
+            $.ajax({
+                type: "get",
+                url: 'http://192.168.4.1/func',
+                data: dataObj,
+
+                dataType: 'json',
+                success: cb,
+
+                xhrFields: {
+                    withCredentials: false
+                },
+                error: error
+            });
+        }
+
+    </script>
 
     <style>
         body {
@@ -75,7 +97,12 @@
                     <option value="off">Off</option>
                     <option value="on">On</option>
                 </select> -->
-                <button id="logdata">logdata</button>
+                <button id="startTurnToTarget">startTurnToTarget</button>
+                <button id="stopTurnToTarget">stopTurnToTarget</button>
+                <button id="incTarget">incTarget</button>
+                <button id="decTarget">decTarget</button>
+
+
             </div>
         </fieldset>
     </div>
@@ -86,6 +113,7 @@
 
             let status = false
 
+            let target = 0
             // showInfo()
             // magnification with which the map will start
             const zoom = 17;
@@ -164,7 +192,7 @@
                 icon: funny2,
                 rotationAngle: rotationAngle,
                 rotationOrigin: 'center',
-                opacity: 0.3
+                opacity: 0.4
             }).addTo(map)
 
             var marker3 = L.marker(pos, {
@@ -173,6 +201,7 @@
                 rotationOrigin: 'center',
                 opacity: 0.2
             }).addTo(map)
+
             // var marker0 = L.marker(pos, { opacity: 0.6 }).addTo(map).bindPopup("test");
 
             //var marker0 = L.circle(pos, 3).addTo(map);
@@ -180,30 +209,6 @@
             var lastLat = null
             var lastLon = null
             var D2R = Math.PI / 180;
-            // Heading (N=0, E=90, S=189, W=270) from point 1 to point 2
-            Heading = function (lat1, lon1, lat2, lon2) {
-
-                var dlon = (lon2 - lon1) * D2R;
-
-                lat1 = lat1 * D2R;
-                lat2 = lat2 * D2R;
-
-                var sdlon = Math.sin(dlon);
-                var cdlon = Math.cos(dlon);
-
-                var slat1 = Math.sin(lat1);
-                var clat1 = Math.cos(lat1);
-
-                var slat2 = Math.sin(lat2);
-                var clat2 = Math.cos(lat2);
-
-                var y = sdlon * clat2;
-                var x = clat1 * slat2 - slat1 * clat2 * cdlon;
-
-                var head = Math.atan2(y, x) * 180 / Math.PI;
-
-                return (head + 360) % 360;
-            };
 
             let getInfoLoop = function () {
                 callGet('getInfo', null, function (result) {
@@ -222,8 +227,8 @@
                     // if (result.gps.gpsHeading) {
                     //     rotationAngle = result.gps.gpsHeading
                     // } else if (result.sys.Heading) {
-                    if (result.estHeading != null) {
-                        marker.setRotationAngle(result.estHeading)
+                    if (result.sys.Heading != null) {
+                        marker.setRotationAngle(result.sys.Heading)
                         marker.setOpacity(1)
                     } else {
                         marker.setOpacity(0.1)
@@ -231,12 +236,7 @@
                     //else {  
 
                     //}
-                    // }
-
-                    if (result.sys.Heading != null) {
-                        marker3.setRotationAngle(result.sys.Heading)
-
-                    }
+                    //}
 
                     //console.log('rotationAngle', rotationAngle);
                     if (result.gps.lat) {
@@ -247,6 +247,12 @@
 
                     marker.setLatLng(pos)
                     marker2.setLatLng(pos)
+
+                    if (result.sys.target != null) {
+                        target = result.sys.target
+                        marker2.setRotationAngle(result.sys.target)
+                    }
+
                     marker3.setLatLng(pos)
 
                     //marker0.bindPopup(JSON.stringify(pos));
@@ -257,19 +263,21 @@
 
 
                     //if (result.gps.speed >= 1)
-                    if (result.sys.HeadingUse) {
-                        marker2.setRotationAngle(result.sys.HeadingUse)
-                        marker2.setOpacity(0.3)
-                    } else {
-                        marker2.setOpacity(0.1)
-                    }
+                    // if (result.sys.HeadingUse) {
+                    //     marker2.setRotationAngle(result.sys.HeadingUse)
+                    //     marker2.setOpacity(0.3)
+                    // } else {
+                    //     marker2.setOpacity(0.1)
+                    // }
+
+                    
 
                     // lastLat = result.lat
                     // lastLon = result.lon
 
                     setTimeout(() => {
                         getInfoLoop()
-                    }, 500);
+                    }, 1000);
                 })
             }
 
@@ -277,49 +285,40 @@
                 console.log(result);
                 getInfoLoop()
             })
+            $('#startTurnToTarget').click(function () {
+                callGet('startTurnToTarget', null, function (result) {
+                    console.log(result);
+                })
+            })
 
+            $('#stopTurnToTarget').click(function () {
+                callGet('stopTurnToTarget', null, function (result) {
+                    console.log(result);
+                })
+            })
+
+            $('#incTarget').click(function () {
+                if (target != null) {
+
+                    target += 5
+                    console.log('target', target);
+                    callGet('setTarget', target, function (result) {
+                        console.log(result);
+                    })
+                }
+            })
+
+            $('#decTarget').click(function () {
+                if (target != null) {
+
+                    target -= 5
+                    console.log('target', target);
+                    callGet('setTarget', target, function (result) {
+                        console.log(result);
+                    })
+                }
+            })
         })
-
-        function calEstHeading(comp0, gph0, comp1, gph1, comp) {
-            //convert edge degree first
-            let x0 = 0 //use as reference point
-            let g0 = conAngle(gph0 - comp0)
-
-            let x1 = conAngle(comp1 - comp0)
-            let g1 = conAngle(gph1 - comp0)
-
-            let y0 = conAngle(g0 - x0)
-            let y1 = conAngle(g1 - x1)
-
-            let xn = conAngle(comp - comp0)
-
-            //console.log(x0, g0, x1, g1, y0, y1);
-            let m = (y1 - y0) / conAngle(x1 - x0)
-            //console.log(comp1, comp0, subAngle(comp1, comp0));
-            console.log(y0, y1, m);
-            // console.log((gph1 - comp1) - (gph0 - comp0), (comp1 - comp0), -3 / 10, m);
-            let b = y0 - (m * x0)
-            //console.log(b);
-
-            let gn = (m * xn) + b + xn
-
-            return conAngle(comp0 + gn)
-        }
-
-        function conAngle(result) {
-            if (result > 180) {
-                result = result - 360
-            }
-            if (result < -180) {
-                result = result + 360
-            }
-
-            return result
-        }
-
-        //console.log(calEstHeading(10, 15, 20, 22, 18));
-        //gph0, comp0, gph1, comp1, comp
-        //console.log(calEstHeading(320, 285, 30, 350, 10));
 
     </script>
 
