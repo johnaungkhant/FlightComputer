@@ -56,7 +56,7 @@
     <style>
         body {
             font-family: Courier, monospaced;
-            font-size: 10px;
+            font-size: 14px;
             font-weight: bold;
 
         }
@@ -74,6 +74,20 @@
         #map {
             height: 450px;
         }
+
+
+        .column {
+            height: 100%;
+            float: left;
+        }
+
+        .c20 {
+            width: 20%;
+        }
+
+        .c80 {
+            width: 80%;
+        }
     </style>
     <script>
 
@@ -86,12 +100,14 @@
 </head>
 
 <body>
-    <div class="d-grid grid-20-80 gap-1">
-        <div class="grid-item text-center text-md">
-            <div id="map"></div>
-        </div>
-        <div class="grid-item text-center text-md">Column 2</div>
+
+    <div class="column c80">
+        <div id="map"></div>
     </div>
+    <div class="column c20">
+        turningState:<label id="turningState">Na</label>
+    </div>
+
 
 
     <div class="ui-field-contain">
@@ -277,11 +293,12 @@
                     //     marker2.setOpacity(0.1)
                     // }
 
-                    
+
 
                     // lastLat = result.lat
                     // lastLon = result.lon
 
+                    $('#turningState').text(result.sys.turningState)
                     setTimeout(() => {
                         getInfoLoop()
                     }, 1000);
