@@ -106,6 +106,7 @@
     </div>
     <div class="column c20">
         Direction Diverse:<label id="dirDiverse">Na</label>
+        Target Pos :<label id='targetPos'>Na</label>
     </div>
 
     <div class="ui-field-contain">
@@ -223,9 +224,9 @@
                 opacity: 0.2
             }).addTo(map)
 
-            // var marker0 = L.marker(pos, { opacity: 0.6 }).addTo(map).bindPopup("test");
+            //var marker0 = L.marker(pos, { opacity: 0.6 }).addTo(map).bindPopup("test");
 
-            //var marker0 = L.circle(pos, 3).addTo(map);
+            var marker0 = L.circle(pos, 5).addTo(map);
 
             var lastLat = null
             var lastLon = null
@@ -288,6 +289,17 @@
                     } else {
                         marker3.setOpacity(0.1)
                     }
+
+                    if (result.sys.targetPos) {
+
+                        marker0.setLatLng({ lat: result.sys.targetPos.lat, lng: result.sys.targetPos.lon })
+                        map.addLayer(marker0)
+                        $('#targetPos').text(JSON.stringify(result.sys.targetPos))
+                    } else {
+                        map.removeLayer(marker0);
+
+                    }
+
 
                     // lastLat = result.lat
                     // lastLon = result.lon
