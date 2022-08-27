@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html>
+
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<script>
+
+console.log(window.location.host);
+    if (window.location.host && window.location.host != "" && window.location.host != "localhost") {
+        host = window.location.host;
+    } else {
+        host = '192.168.4.1';
+    }
+
+
+    var serviceUrl = 'http://' + host + '/';
+    function callGet(func, cb) {
+
+        var xh = new XMLHttpRequest();
+        if (cb) {
+            xh.onreadystatechange = function () {
+                if (xh.readyState == 4 && xh.status == 200)
+                    cb(xh.responseText);
+            }
+        }
+
+        console.log(serviceUrl + func);
+        xh.open("GET", serviceUrl + func, true); // true for asynchronous 
+        xh.send(null);
+    }
+
+</script>
+<style>
+    .form {
+        border: 3px solid #f1f1f1;
+    }
+
+    button {
+
+        width: 80px;
+        height: 50px;
+    }
+
+    img.avatar {
+        width: 40%;
+        border-radius: 50%;
+    }
+
+    .container {
+        padding: 16px;
+    }
+
+    span.psw {
+        float: right;
+        padding-top: 16px;
+    }
+
+    @media screen and (max-width:100px) {
+        span.psw {
+            display: block;
+            float: none;
+        }
+
+    }
+</style>
+
+<body>
+    <div style="display: none;">
+        <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete"
+            autocomplete="address-level4" />
+    </div>
+    <div class="form" autocomplete="off">
+
+        <div class="container" autocomplete="off">
+            <label id="dt"></label> <br>
+            <b>pos: </b><label id="pos"></label>
+            <br>
+            <b>pos target: </b><label id="posTg"></label>
+            <br>
+            <b>alt: </b><label id="alt"></label> <br>
+            <b>alt target: </b><label id="altTg"></label> <br>
+            <br>
+            <button onclick="keepAlt()" id="keepAlt">Keep Altitude</button>
+            <br>
+            <label id="startHop">Hoping: </label> <button onclick="startHop()">startHop</button> <button
+                onclick="stopHop()">stopHop</button>
+            <br>
+            <b>throttle: </b><label id="thro">Na</label> <br>
+            <br>
+
+            <button onclick="apply('up')">up</button>
+            <button onclick="apply('down')">down</button>
+            <button onclick="apply('stopThr')">stop</button>
+
+            <br>
+            <b>roll: </b><label id="roll">Na</label> <br>
+            <br>
+
+            <button onclick="move('ra')">up</button>
+            <button onclick="move('rn')">down</button>
+            <button onclick="move('rm')">stop</button>
+
+            <br>
+            <b>pitch: </b><label id="pitch">Na</label> <br>
+            <br>
+
+            <button onclick="move('pa')">up</button>
+            <button onclick="move('pn')">down</button>
+            <button onclick="move('pm')">stop</button>
+
+            <br>
+            <b>yaw: </b><label id="yaw">Na</label> <br>
+            <br>
+
+            <button onclick="move('ya')">up</button>
+            <button onclick="move('yn')">down</button>
+            <button onclick="move('ym')">stop</button>
+        </div>
+        </form>
+
+        <script>
+            function getElem(id) {
+                return document.getElementById(id);
+            }
+            function setTxt(id, tx) {
+                getElem(id).innerHTML = tx
+            }
+
+            callGet('func?msg=getConfig', function (result) {
+                console.log('getConfig', result);
+                configData = JSON.parse(result)
+                setTxt('altTg', configData.targetAlt)
+                setInterval(() => {
+                    callGet('getInfo', function (result) {
+                        console.log(result);
+                        let resultObj = JSON.parse(result)
+                        setTxt('dt', resultObj.time + ' ' + resultObj.mem)
+
+                        setTxt('alt', resultObj.alt)
+                        setTxt('thro', resultObj.thro)
+                        isKeepAlt = resultObj.keepAlt
+
+                        setTxt('keepAlt', 'Keep Altitude: ' + isKeepAlt)
+
+                        setTxt('startHop', 'Hoping: ' + resultObj.startHop)
+                    })
+                }, 1000);
+
+            })
+
+            function apply(cmd, param) {
+                let url = 'func?msg=' + cmd
+                if (param) {
+                    url += '&d=' + param
+                }
+                callGet(url, (result) => { setTxt('thro', result) })
+            }
+
+            min = 1
+            mid = 1.5
+            max = 2
+
+            pinValue = {
+                14: mid,
+                13: mid,
+                12: mid,
+            }
+            function move(params) {
+                let pin
+                let id
+                if (params[0] == 'p') {
+                    pin = 13
+                    id = 'pitch'
+                } else if (params[0] == 'r') {
+                    pin = 14
+                    id = 'roll'
+                } else if (params[0] == 'y') {
+                    pin = 12
+                    id = 'yaw'
+                }
+
+                if (params[1] == 'm') {
+                    pinValue[pin] = mid
+                } else {
+                    let adding = params[1] == 'a' ? 0.1 : -0.1
+
+                    pinValue[pin] += adding
+
+                    if (pinValue[pin] < min) {
+                        pinValue[pin] = min
+                    } else if (pinValue[pin] > max) {
+                        pinValue[pin] = max
+                    }
+                }
+
+                callGet('func?msg=move&data=' + pin + '_' + pinValue[pin], function (result) {
+                    setTxt(id, result)
+                })
+            }
+
+            let isKeepAlt = false
+            function keepAlt() {
+                isKeepAlt = !isKeepAlt
+                callGet('func?msg=keepAlt&data=' + (isKeepAlt ? 1 : 0), function (result) {
+                    isKeepAlt = result == 'true'
+                    setTxt('keepAlt', 'Keep Altitude: ' + result)
+
+                })
+            }
+
+            function startHop() {
+                callGet('func?msg=startHop&data=1.5', function (result) {
+                    setTxt('startHop', 'Hoping: true')
+
+                })
+            }
+            function stopHop() {
+                callGet('func?msg=stopHop', function (result) {
+                    setTxt('startHop', 'Hoping: false')
+                })
+            }
+        </script>
+</body>
+
+</html>
