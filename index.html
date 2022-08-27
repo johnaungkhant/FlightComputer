@@ -105,10 +105,8 @@
         <div id="map"></div>
     </div>
     <div class="column c20">
-        turningState:<label id="turningState">Na</label>
+        Direction Diverse:<label id="dirDiverse">Na</label>
     </div>
-
-
 
     <div class="ui-field-contain">
         <fieldset class="ui-grid-a">
@@ -240,7 +238,6 @@
                     $('#msg').append("time: " + result.time + ' mem: ' + result.mem + '\n')
                     $('#msg').append("hdop: " + result.gps.hdop + ' satellites: ' + result.gps.satellites + '\n')
 
-
                     $('#msg').append("heading: " + result.sys.Heading + '\n')
                     $('#msg').append("alt: " + result.sys.alt + '\n')
                     $('#msg').append("altGps: " + result.gps.alt + ' speed: ' + result.gps.speed + '\n')
@@ -265,7 +262,6 @@
                     if (result.gps.lat) {
                         pos.lat = result.gps.lat
                         pos.lng = result.gps.lon
-
                     }
 
                     marker.setLatLng(pos)
@@ -286,19 +282,18 @@
 
 
                     //if (result.gps.speed >= 1)
-                    // if (result.sys.HeadingUse) {
-                    //     marker2.setRotationAngle(result.sys.HeadingUse)
-                    //     marker2.setOpacity(0.3)
-                    // } else {
-                    //     marker2.setOpacity(0.1)
-                    // }
-
-
+                    if (result.gps.gpsHeading) {
+                        marker3.setRotationAngle(result.gps.gpsHeading)
+                        marker3.setOpacity(0.3)
+                    } else {
+                        marker3.setOpacity(0.1)
+                    }
 
                     // lastLat = result.lat
                     // lastLon = result.lon
 
-                    $('#turningState').text(result.sys.turningState)
+                    $('#dirDiverse').text(result.sys.dirDiverse)
+
                     setTimeout(() => {
                         getInfoLoop()
                     }, 1000);
