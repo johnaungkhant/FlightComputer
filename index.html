@@ -106,7 +106,9 @@
     </div>
     <div class="column c20">
         Direction Diverse:<label id="dirDiverse">Na</label>
-        Target Pos :<label id='targetPos'>Na</label>
+        <!-- Target Pos :<label id='targetPos'>Na</label> -->
+        Altitude:<label id="altitude">Na</label>
+        Control:<label id="control">Na</label>
     </div>
 
     <div class="ui-field-contain">
@@ -240,8 +242,8 @@
                     $('#msg').append("hdop: " + result.gps.hdop + ' satellites: ' + result.gps.satellites + '\n')
 
                     $('#msg').append("heading: " + result.sys.Heading + '\n')
-                    $('#msg').append("alt: " + result.sys.alt + '\n')
-                    $('#msg').append("altGps: " + result.gps.alt + ' speed: ' + result.gps.speed + '\n')
+                    //$('#msg').append("alt: " + result.sys.alt + '\n')
+                    $('#msg').append('speed: ' + result.gps.speed + '\n')
 
                     $('#msg').append('\n\n' + JSON.stringify(result))
 
@@ -294,7 +296,7 @@
 
                         marker0.setLatLng({ lat: result.sys.targetPos.lat, lng: result.sys.targetPos.lon })
                         map.addLayer(marker0)
-                        $('#targetPos').text(JSON.stringify(result.sys.targetPos))
+                        //$('#targetPos').text(JSON.stringify(result.sys.targetPos))
                     } else {
                         map.removeLayer(marker0);
 
@@ -305,7 +307,8 @@
                     // lastLon = result.lon
 
                     $('#dirDiverse').text(result.sys.dirDiverse)
-
+                    $('#altitude').text(result.sys.alt + ' | ' + result.gps.alt)
+                    $('#control').text(JSON.stringify(result.clt))
                     setTimeout(() => {
                         getInfoLoop()
                     }, 1000);
