@@ -14,8 +14,14 @@ adb start-server
 wget https://github.com/OpenStick/OpenStick/releases/download/v1/base-generic.zip
 wget https://github.com/OpenStick/OpenStick/releases/download/v1/debian.zip
 
+
 adb reboot bootloader
 fastboot devices
+
+cd base
+flash.bat
+cd debain
+flash.bat
 
 //run file flash.bat 
 
@@ -224,11 +230,6 @@ rm run.sh
 
 mkdir /data
 
-cd mavlink
-echo "start app service"
-sudo forever-service install app --script app.js
-sudo service app start
-
 //end of copy ----------------------------------
 =========================================================
 sh run.sh
@@ -251,3 +252,13 @@ nmtui
 //by Delete or <Edit...>
 //  set Automatically connect to ->[ ] 
 //  set Available to all users ->[ ] 
+
+=======================================================
+//for a automatic start app when rebooting
+//after doing this, the device will not connect by USB
+
+echo "start app service"
+cd /mavlink
+sudo forever-service install app --script app.js
+sudo service app start
+
