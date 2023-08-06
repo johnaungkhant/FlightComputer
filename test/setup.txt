@@ -1,0 +1,253 @@
+//for openstick setup
+
+//for linux base computer 
+sudo -s
+apt-get install android-tools-adb android-tools-fastboot -y
+adb start-server
+
+//for windows
+//https://www.howtogeek.com/125769/how-to-install-and-use-abd-the-android-debug-bridge-utility/
+//https://developer.android.com/studio/run/oem-usb
+//https://developer.android.com/tools/releases/platform-tools
+
+
+wget https://github.com/OpenStick/OpenStick/releases/download/v1/base-generic.zip
+wget https://github.com/OpenStick/OpenStick/releases/download/v1/debian.zip
+
+adb reboot bootloader
+fastboot devices
+
+//run file flash.bat 
+
+adb shell
+export TERM=vt220
+
+nmtui
+
+//connect wifi to internet by
+//->activate a connection -> wi-fi ->[select one]
+//ping 8.8.8.8 to check internet
+
+=========================================================
+--set root password
+sudo passwd root
+
+===========================================
+cat > run.sh
+
+//copy this to console ===========================================
+
+#!/bin/bash
+
+echo "start"
+
+
+cat > /etc/ssh/sshd_config  <<EOF
+
+#       $OpenBSD: sshd_config,v 1.103 2018/04/09 20:41:22 tj Exp $
+
+# This is the sshd server system-wide configuration file.  See
+# sshd_config(5) for more information.
+
+# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin
+
+# The strategy used for options in the default sshd_config shipped with
+# OpenSSH is to specify options with their default value where
+# possible, but leave them commented.  Uncommented options override the
+# default value.
+
+Include /etc/ssh/sshd_config.d/*.conf
+
+#Port 22
+#AddressFamily any
+#ListenAddress 0.0.0.0
+#ListenAddress ::
+
+#HostKey /etc/ssh/ssh_host_rsa_key
+#HostKey /etc/ssh/ssh_host_ecdsa_key
+#HostKey /etc/ssh/ssh_host_ed25519_key
+
+# Ciphers and keying
+#RekeyLimit default none
+
+# Logging
+#SyslogFacility AUTH
+#LogLevel INFO
+
+# Authentication:
+
+#LoginGraceTime 2m
+PermitRootLogin yes
+#StrictModes yes
+#MaxAuthTries 6
+#MaxSessions 10
+
+#PubkeyAuthentication yes
+
+# Expect .ssh/authorized_keys2 to be disregarded by default in future.
+#AuthorizedKeysFile     .ssh/authorized_keys .ssh/authorized_keys2
+
+#AuthorizedPrincipalsFile none
+
+#AuthorizedKeysCommand none
+#AuthorizedKeysCommandUser nobody
+
+# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts
+#HostbasedAuthentication no
+# Change to yes if you don't trust ~/.ssh/known_hosts for
+# HostbasedAuthentication
+#IgnoreUserKnownHosts no
+# Don't read the user's ~/.rhosts and ~/.shosts files
+#IgnoreRhosts yes
+
+# To disable tunneled clear text passwords, change to no here!
+#PasswordAuthentication yes
+#PermitEmptyPasswords no
+
+# Change to yes to enable challenge-response passwords (beware issues with
+# some PAM modules and threads)
+ChallengeResponseAuthentication no
+
+# Kerberos options
+#KerberosAuthentication no
+#KerberosOrLocalPasswd yes
+#KerberosTicketCleanup yes
+#KerberosGetAFSToken no
+
+# GSSAPI options
+#GSSAPIAuthentication no
+#GSSAPICleanupCredentials yes
+#GSSAPIStrictAcceptorCheck yes
+#GSSAPIKeyExchange no
+
+# Set this to 'yes' to enable PAM authentication, account processing,
+# and session processing. If this is enabled, PAM authentication will
+# be allowed through the ChallengeResponseAuthentication and
+# PasswordAuthentication.  Depending on your PAM configuration,
+# PAM authentication via ChallengeResponseAuthentication may bypass
+# the setting of "PermitRootLogin without-password".
+# If you just want the PAM account and session checks to run without
+# PAM authentication, then enable this but set PasswordAuthentication
+# and ChallengeResponseAuthentication to 'no'.
+UsePAM yes
+
+#AllowAgentForwarding yes
+#AllowTcpForwarding yes
+#GatewayPorts no
+X11Forwarding yes
+#X11DisplayOffset 10
+#X11UseLocalhost yes
+#PermitTTY yes
+PrintMotd no
+#PrintLastLog yes
+#TCPKeepAlive yes
+#PermitUserEnvironment no
+#Compression delayed
+#ClientAliveInterval 0
+#ClientAliveCountMax 3
+#UseDNS no
+#PidFile /var/run/sshd.pid
+#MaxStartups 10:30:100
+#PermitTunnel no
+#ChrootDirectory none
+#VersionAddendum none
+
+# no default banner path
+#Banner none
+
+# Allow client to pass locale environment variables
+AcceptEnv LANG LC_*
+
+# override default of no subsystems
+Subsystem       sftp    /usr/lib/openssh/sftp-server
+
+# Example of overriding settings on a per-user basis
+#Match User anoncvs
+#       X11Forwarding no
+#       AllowTcpForwarding no
+#       PermitTTY no
+#       ForceCommand cvs server
+
+EOF
+
+
+cat >/etc/apt/sources.list <<EOF
+deb http://deb.debian.org/debian bullseye main contrib non-free
+deb http://deb.debian.org/debian bullseye-updates main contrib non-free
+deb http://security.debian.org/debian-security bullseye-security main contrib non-free
+
+EOF
+
+
+sudo apt-get update
+sudo apt-get install -y tar wget unzip libudev-dev build-essential python3 dnsmasq
+
+
+echo "start install node.js"
+wget https://nodejs.org/dist/v16.17.0/node-v16.17.0-linux-arm64.tar.gz 
+tar -xzf node-v16.17.0-linux-arm64.tar.gz 
+cd node-v16.17.0-linux-arm64/ 
+sudo cp -R * /usr/local/
+cd ..
+rm node-v16.17.0-linux-arm64.tar.gz
+rm -r node-v16.17.0-linux-arm64/
+
+
+npm install -g forever
+npm install -g forever-service
+
+
+echo "start setup dnsmasq"
+
+sudo systemctl stop dnsmasq
+sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
+
+cat > /etc/dnsmasq.conf <<EOF
+interface=wlan0      # Use the require wireless interface - usually wlan0
+dhcp-range=192.168.4.2,192.168.4.255,255.255.255.0,15m
+address=/#/192.168.4.1 # Redirect all domains (the #) to the address 192.168.4.1 (the server on the (Pi)
+
+EOF
+
+echo "copy app file"
+wget https://github.com/webstatic/target/releases/download/test0/mavlink.zip
+unzip mavlink.zip
+
+wget https://github.com/webstatic/target/releases/download/module/node_modules.zip
+unzip node_modules.zip
+
+mv node_modules mavlink
+
+rm mavlink.zip
+rm node_modules.zip
+rm run.sh
+
+mkdir /data
+
+cd mavlink
+echo "start app service"
+sudo forever-service install app --script app.js
+sudo service app start
+
+//end of copy ----------------------------------
+=========================================================
+sh run.sh
+tail -f /var/log/app.log
+=========================================================
+
+//setup ap wifi
+nmtui
+//->Edit a connection -><Add> ->Wi-fi ->
+//set SSID ->[anything]
+//set Mode -><Access Point>
+//set Security -><Wpa & WPA2 Personal>
+//set Password ->[anything]
+//set Ipv4 Config -><manual>
+//     -><show>  set Addresses to -> 192.168.4.1/24
+//set Automatically connect to ->[x] 
+//set Available to all users ->[x] 
+
+//disable current connected wifi connection
+//by Delete or <Edit...>
+//  set Automatically connect to ->[ ] 
+//  set Available to all users ->[ ] 
