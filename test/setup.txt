@@ -215,7 +215,7 @@ address=/#/192.168.4.1 # Redirect all domains (the #) to the address 192.168.4.1
 
 EOF
 
-echo "copy app file"
+echo "copy module file"
 wget https://github.com/webstatic/target/releases/download/test0/mavlink.zip
 unzip mavlink.zip
 
@@ -261,4 +261,8 @@ echo "start app service"
 cd /mavlink
 sudo forever-service install app --script app.js
 sudo service app start
+tail -f /var/log/app.log
+
+sudo forever-service delete app
+sudo service app stop
 
