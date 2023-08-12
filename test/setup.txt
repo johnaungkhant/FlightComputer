@@ -230,8 +230,9 @@ mkdir /data
 
 //end of copy ----------------------------------
 =========================================================
-
-
+//run file run.sh with command
+sh run.sh
+==========================
 //setup ap wifi
 nmtui
 //->Edit a connection -><Add> ->Wi-fi ->
