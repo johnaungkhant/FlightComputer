@@ -216,15 +216,13 @@ address=/#/192.168.4.1 # Redirect all domains (the #) to the address 192.168.4.1
 EOF
 
 echo "copy module file"
-wget https://github.com/webstatic/target/releases/download/test0/mavlink.zip
-unzip mavlink.zip
 
 wget https://github.com/webstatic/target/releases/download/module/node_modules.zip
 unzip node_modules.zip
 
+mkdir mavlink
 mv node_modules mavlink
 
-rm mavlink.zip
 rm node_modules.zip
 rm run.sh
 
@@ -232,9 +230,7 @@ mkdir /data
 
 //end of copy ----------------------------------
 =========================================================
-sh run.sh
-tail -f /var/log/app.log
-=========================================================
+
 
 //setup ap wifi
 nmtui
@@ -253,6 +249,8 @@ nmtui
 //  set Automatically connect to ->[ ] 
 //  set Available to all users ->[ ] 
 
+=========================================================
+//upload the code of mavlink via ftp
 =======================================================
 //for a automatic start app when rebooting
 //after doing this, the device will not connect by USB
